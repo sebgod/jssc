@@ -66,7 +66,7 @@ function Compile(file : FileInfo) {
                     "@for /F \"usebackq\" %%G in (" +
                     "`git rev-parse --short HEAD 2^>nul ^|^| " +
                     "echo UNVERSIONED`) do @set ID=%%G\n" +
-                    "@set EXE=%TEMP%\_jssc_%ID%\n" +
+                    "@set EXE=%TEMP%\\_jssc_%ID%.exe\n" +
                     "@if not exist \"%EXE%\" (\n" +
                     "    jsc " + options + "/out:" + quotedTarget + " " +
                     "\"%~dpn0.jss\"\n" +
