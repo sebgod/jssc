@@ -53,8 +53,7 @@ function Compile(file : FileInfo) {
             var jsscAll : String =
                 '"' + Path.Combine("%TEMP%", jsscWildcard) + '"';
             if (isSelf) {
-                target = Path.Combine("%TEMP%",
-                        String.Format(jsscNamePattern, "%ID%"));
+                target = "%EXE%"
                 startInfo = null;
             } else {
                 target = "%~dpn0." + (fileIsLibrary ? "dll" : "exe");
@@ -62,14 +61,29 @@ function Compile(file : FileInfo) {
                         options + "/utf8output " + quotedFile);
             }
             var quotedTarget : String = '"' + target + '"';
-            File.WriteAllText(batchFile,
+            if (isSelf) {
+                File.WriteAllText(batchFile,
                     "@setlocal enabledelayedexpansion enableextensions\n" +
-                    (isSelf ? "@set ID=%RANDOM%_%RANDOM%\n" : "") +
-                    (isSelf ? "@del /q /f " + jsscAll + " 1>nul 2>&1\n" : "") +
+                    "@for /F \"usebackq\" %%G in (" +
+                    "`git rev-parse --short HEAD 2^>nul ^|^| " +
+                    "echo UNVERSIONED`) do @set ID=%%G\n" +
+                    "@set EXE=%TEMP%\_jssc_%ID%\n" +
+                    "@if not exist \"%EXE%\" (\n" +
+                    "    jsc " + options + "/out:" + quotedTarget + " " +
+                    "\"%~dpn0.jss\"" +
+                    ")\n" +
+                    "@call " + quotedTarget + " %*\n",
+                    utf8
+                );
+            } else {
+                File.WriteAllText(batchFile,
+                    "@setlocal enabledelayedexpansion enableextensions\n" +
                     "@jsc " + options + "/out:" + quotedTarget + " " +
                     "\"%~dpn0.jss\"" +
                     (fileIsLibrary ? "\n" : " && " + quotedTarget + " %*\n"),
-                    utf8);
+                    utf8
+                );
+            }
             break;
         default:
             throw new ArgumentException(
