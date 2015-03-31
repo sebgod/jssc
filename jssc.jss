@@ -48,10 +48,7 @@ function Compile(file : FileInfo) {
                 "/codepage:65001 /nologo /fast+ ";
 
             var target : String;
-            var jsscNamePattern : String = "_jssc_{0}.exe";
-            var jsscWildcard : String = String.Format(jsscNamePattern, "*");
-            var jsscAll : String =
-                '"' + Path.Combine("%TEMP%", jsscWildcard) + '"';
+            
             if (isSelf) {
                 target = "%EXE%"
                 startInfo = null;
@@ -60,7 +57,9 @@ function Compile(file : FileInfo) {
                 startInfo = new ProcessStartInfo("jsc",
                         options + "/utf8output " + quotedFile);
             }
+            
             var quotedTarget : String = '"' + target + '"';
+            
             if (isSelf) {
                 File.WriteAllText(batchFile,
                     "@setlocal enabledelayedexpansion enableextensions\n" +
@@ -70,7 +69,7 @@ function Compile(file : FileInfo) {
                     "@set EXE=%TEMP%\_jssc_%ID%\n" +
                     "@if not exist \"%EXE%\" (\n" +
                     "    jsc " + options + "/out:" + quotedTarget + " " +
-                    "\"%~dpn0.jss\"" +
+                    "\"%~dpn0.jss\"\n" +
                     ")\n" +
                     "@call " + quotedTarget + " %*\n",
                     utf8
