@@ -1,0 +1,17 @@
+#!/bin/env sh
+
+ROOT=${0%/*}
+if [ "${ROOT}" == "${0}" ]; then
+    ROOT=`pwd -P`
+else
+    ROOT=`cd "${ROOT}" && pwd -P`
+fi
+
+ID=`git rev-parse --short HEAD 2>/dev/null || echo UNVERSIONED`
+EXE=_jssc_${ID}.exe
+if [ ! -x "${TMP}/${EXE}" ] ; then
+    cd "${TMP}"
+    jsc -codepage:65001 -nologo -fast+ -out:"${EXE}" "${ROOT}/jssc.jss"
+    cd "${OLDPWD}"
+fi
+exec "${TMP}/${EXE}" $*
