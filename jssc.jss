@@ -38,8 +38,9 @@ function Compile(file : FileInfo) {
     var fileIsLibrary : Boolean = Char.IsUpper(file.Name, 0);
     var isSelf : Boolean = file.Name == "jssc.jss";
     var quotedFile : String = "\"" + file.FullName + "\"";
-    var batchFile : String = file.FullName.Substring(0,
-            file.FullName.Length - fileExt.Length) + ".cmd";
+    var bashFileName : String = file.FullName.Substring(0,
+            file.FullName.Length - fileExt.Length);
+    var batchFileName : String = bashFileName + ".cmd";
 
     switch (fileExt) {
         case ".JSS":
@@ -60,8 +61,9 @@ function Compile(file : FileInfo) {
             
             var quotedTarget : String = '"' + target + '"';
             
+            var batchFile : String;
             if (isSelf) {
-                File.WriteAllText(batchFile,
+                batchFile =
                     "@setlocal enabledelayedexpansion enableextensions\n" +
                     "@for /F \"usebackq\" %%G in (" +
                     "`git rev-parse --short HEAD 2^>nul ^|^| " +
@@ -71,18 +73,15 @@ function Compile(file : FileInfo) {
                     "    jsc " + options + "/out:" + quotedTarget + " " +
                     "\"%~dpn0.jss\"\n" +
                     ")\n" +
-                    "@call " + quotedTarget + " %*\n",
-                    utf8
-                );
+                    "@call " + quotedTarget + " %*\n";
             } else {
-                File.WriteAllText(batchFile,
+                batchFile =
                     "@setlocal enabledelayedexpansion enableextensions\n" +
                     "@jsc " + options + "/out:" + quotedTarget + " " +
                     "\"%~dpn0.jss\"" +
-                    (fileIsLibrary ? "\n" : " && " + quotedTarget + " %*\n"),
-                    utf8
-                );
+                    (fileIsLibrary ? "\n" : " && " + quotedTarget + " %*\n");
             }
+            File.WriteAllText(batchFileName, batchFile, utf8);
             break;
         default:
             throw new ArgumentException(
