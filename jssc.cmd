@@ -1,4 +1,7 @@
 @setlocal enabledelayedexpansion enableextensions
-@set ID=%RANDOM%_%RANDOM%
-@del /q /f "%TEMP%\_jssc_*.exe" 1>nul 2>&1
-@jsc /codepage:65001 /nologo /fast+ /out:"%TEMP%\_jssc_%ID%.exe" "%~dpn0.jss" && "%TEMP%\_jssc_%ID%.exe" %*
+@for /F "usebackq" %%G in (`git rev-parse --short HEAD 2^>nul ^|^| echo UNVERSIONED`) do @set ID=%%G
+@set EXE=%TEMP%\_jssc_%ID%.exe
+@if not exist "%EXE%" (
+    jsc /codepage:65001 /nologo /fast+ /out:"%EXE%" "%~dpn0.jss"
+)
+@call "%EXE%" %*
